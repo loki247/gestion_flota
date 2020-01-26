@@ -66,6 +66,46 @@ class OrdenCompraController extends Controller{
         }
     }
 
+    public function editOrdenCompra(Request $request){
+        $error = $this->validarCampos($request->all());
+
+        if ($error) {
+            return response()->json(['error' => $error, 'codigo' => 400]);
+        }
+
+        $data = new \stdClass();
+        $data->id_orden = $request->id_orden;
+        $data->id_mantencion = $request->id_mantencion;
+        $data->repuestos = $request->repuestos;
+        $data->cantidad = $request->cantidad;
+
+        DB::beginTransaction();
+        try{
+            ordenCompra::editOrdenCompra($data);
+            DB::commit();
+        }catch (Exception $e){
+            DB::rollback();
+            return response()->json(['error' => $e]);
+        }catch(\Throwable $e){
+            DB::rollback();
+            return response()->json(['error' => $e]);
+        }
+    }
+
+    public function deleteOrdenCompra(Request $request){
+        DB::beginTransaction();
+        try{
+            ordenCompra::deleteOrdenCompra($request->id_orden);
+            DB::commit();
+        }catch (Exception $e){
+            DB::rollback();
+            return response()->json(['error' => $e]);
+        }catch(\Throwable $e){
+            DB::rollback();
+            return response()->json(['error' => $e]);
+        }
+    }
+
     public function validarCampos($data){
         $rules = [
             'id_mantencion' => function ($attribute, $value, $fail) {

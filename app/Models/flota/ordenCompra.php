@@ -53,4 +53,28 @@ class ordenCompra extends Model{
 
         return $ordenCompra->id_orden;
     }
+
+    public static function editOrdenCompra($data){
+        $detalle = "[";
+
+        for($i = 0; $i < count($data->repuestos); $i++){
+            $detalle .= '{"repuesto": "' . $data->repuestos[$i] . '", "cantidad" : ' . $data->cantidad[$i] . "},";
+        }
+
+        $detalle .= "]";
+
+        ordenCompra::where("id_orden", "=", $data->id_orden)
+            ->update([
+                'id_mantencion' => $data->id_mantencion,
+                'detalle' => str_replace(",]", "]", $detalle),
+                //'id_estado' => $data->id_estado
+            ]);
+    }
+
+    public static function deleteOrdenCompra($id_orden){
+        ordenCompra::where("id_orden", "=", $id_orden)
+            ->update([
+                'borrado' => true,
+            ]);
+    }
 }

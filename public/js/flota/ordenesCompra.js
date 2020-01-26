@@ -53,7 +53,7 @@ function listOrdenesCompra(data) {
                     var texto =
                         "<button type='button' class='btn btn-sm btn-primary' onclick='getOrdenCompraById(" + data.id_orden + ");' title='Editar Registro'><i class='fa fa-edit'></i></button>" +
                         "&nbsp;&nbsp;" +
-                        "<button type='button' class='btn btn-sm btn-danger' title='Eliminar Registro'><i class='fa fa-times'></i></button>";
+                        "<button type='button' class='btn btn-sm btn-danger' onclick='deleteOrdenCompra(" + data.id_orden + ");' title='Eliminar Registro'><i class='fa fa-times'></i></button>";
 
                     return texto;
                 }
@@ -124,7 +124,7 @@ function getOrdenCompraById(id_orden) {
                         "</div>" +
 
                         "<div class='col-md-2'style='margin-top: 35px;'>" +
-                            "<button type='button' class='btn btn-sm btn-danger' name='btnDelete[]' onclick='deleteCampoRepuesto(" + contador + ");'><i class='fa fa-times'></i></button>" +
+                            "<button type='button' class='btn btn-sm btn-danger' name='btnDelete[]' onclick='deleteCampoRepuesto(" + (index + 1) + ", 2);'><i class='fa fa-times'></i></button>" +
                         "</div>" +
                     "</div>");
             });
@@ -245,7 +245,7 @@ function editOrdenCompra() {
 
     var detalle_edit = [];
 
-    for (var i = 0; i < detalle.length; i++){
+    for (var i = 0; i < detalle_edit.length; i++){
         detalle_edit.push('{"repuesto" : "' + repuestos_edit[i] + '", "cantidad" : ' + cantidad_edit[i] +'}');
     }
 
@@ -263,6 +263,7 @@ function editOrdenCompra() {
         },
         data: {
             id_orden: $("#id_orden_compra_edit").val(),
+            id_mantencion: $("#id_mantencion_edit").val(),
             repuestos: repuestos_edit,
             cantidad: cantidad_edit
         },
@@ -281,7 +282,8 @@ function editOrdenCompra() {
 
                 return false;
             } else {
-                $("#alert_edit_orden_compra").modal('toggle');
+                $("#modal_edit_orden_compra").modal('toggle');
+                unblock();
                 getOrdenesCompra();
                 notificacionToast(1, "Datos Actualizados");
             }
@@ -294,33 +296,82 @@ function editOrdenCompra() {
     });
 }
 
-function addCampoRepuesto(id) {
-    $("#" + id).append(
-        "<div class='row mt-1 mb-1' id='repuesto_" + contador + "'>" +
-            "<div class='col-md-8'>" +
-                "<label for='repuesto'>Repuesto</label>" +
-                "<input type='text' name='repuesto[]' class='form-control'>" +
-            "</div>" +
+function deleteOrdenCompra(id_orden) {
+    block();
 
-            "<div class='col-md-2'>" +
-                "<label for='cantidad'>Cantidad</label>" +
-                "<input type='number' name='cantidad[]' class='form-control'>" +
-            "</div>" +
+    $.ajax({
+        url: 'ordenescompra/deleteordencompra',
+        type: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+        },
+        data: {
+            id_orden: id_orden
+        },
+        success: function (data) {
+            unblock();
+            getOrdenesCompra();
+            notificacionToast(1, "Registro Eliminado");
 
-            "<div class='col-md-2'style='margin-top: 35px;'>" +
-                "<button type='button' class='btn btn-sm btn-danger' name='btnDelete[]' onclick='deleteCampoRepuesto(" + contador + ");'><i class='fa fa-times'></i></button>" +
-            "</div>" +
-        "</div>");
-
-    contador ++;
-
-    console.log(contador);
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+            console.log(errorThrown)
+            notificacionToast(1, "Error al procesar la solicitud");
+            unblock();
+        }
+    });
 }
 
-function deleteCampoRepuesto(c) {
-    $("#repuesto_" + c).remove();
+function addCampoRepuesto(id) {
+    if(id == "repuesto"){
+        $("#" + id).append(
+            "<div class='row mt-1 mb-1' id='repuesto_" + contador + "'>" +
+                "<div class='col-md-8'>" +
+                    "<label for='repuesto'>Repuesto</label>" +
+                    "<input type='text' name='repuesto[]' class='form-control'>" +
+                "</div>" +
 
-    contador --;
+                "<div class='col-md-2'>" +
+                    "<label for='cantidad'>Cantidad</label>" +
+                    "<input type='number' name='cantidad[]' class='form-control'>" +
+                "</div>" +
 
-    console.log(contador);
+                "<div class='col-md-2'style='margin-top: 35px;'>" +
+                    "<button type='button' class='btn btn-sm btn-danger' name='btnDelete[]' onclick='deleteCampoRepuesto(" + contador + ", 1);'><i class='fa fa-times'></i></button>" +
+                "</div>" +
+            "</div>");
+    }else{
+        $("#" + id).append(
+            "<div class='row mt-1 mb-1' id='repuesto_edit" + contador + "'>" +
+                "<div class='col-md-8'>" +
+                    "<label for='repuesto'>Repuesto</label>" +
+                    "<input type='text' name='repuesto_edit[]' class='form-control'>" +
+                "</div>" +
+
+                "<div class='col-md-2'>" +
+                    "<label for='cantidad'>Cantidad</label>" +
+                    "<input type='number' name='cantidad_edit[]' class='form-control'>" +
+                "</div>" +
+
+                "<div class='col-md-2'style='margin-top: 35px;'>" +
+                    "<button type='button' class='btn btn-sm btn-danger' name='btnDelete_edit[]' onclick='deleteCampoRepuesto(" + contador + ", 2);'><i class='fa fa-times'></i></button>" +
+                "</div>" +
+            "</div>");
+    }
+
+    contador ++;
+}
+
+function deleteCampoRepuesto(c, id) {
+    if (c >= 0){
+        if(id == 1){
+            $("#repuesto_" + c).remove();
+
+            //contador --;
+        }else{
+            $("#repuesto_edit" + c).remove();
+
+            //contador --;
+        }
+    }
 }

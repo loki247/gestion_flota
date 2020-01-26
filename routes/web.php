@@ -63,6 +63,8 @@ Route::group(['middleware' => ['auth']], function () {
                 Route::get('getordenescompra', 'Flota\OrdenCompraController@getOrdenesCompra');
                 Route::get('getordencomprabyid', 'Flota\OrdenCompraController@getOrdenCompraById');
                 Route::post('saveordencompra', 'Flota\OrdenCompraController@saveOrdenCompra');
+                Route::post('editordencompra', 'Flota\OrdenCompraController@editOrdenCompra');
+                Route::post('deleteordencompra', 'Flota\OrdenCompraController@deleteOrdenCompra');
             });
         });
     });
